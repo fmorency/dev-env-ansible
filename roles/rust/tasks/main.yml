@@ -15,8 +15,14 @@
   when: cargo_exists is failed
   shell: /tmp/sh.rustup.rs -y
 
+# TODO: DRY this block
+- name: Check if {{ ansible_env.HOME }}/.bashrc exists
+  stat:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+  register: bashrc_exists
+
 - name: Ensure cargo environment is sourced from the .bashrc
-  when: cargo_exists is failed
+  when: bashrc_exists.stat.exists
   blockinfile:
     dest: "{{ ansible_env.HOME }}/.bashrc"
     block: |
@@ -24,6 +30,22 @@
     marker: '# {mark} ANSIBLE MANAGED BLOCK - Rust Cargo'
     insertbefore: BOF
     create: yes
+
+- name: Check if {{ ansible_env.HOME }}/.zshrc exists
+  stat:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+  register: zshrc_exists
+
+- name: Ensure cargo environment is sourced from the .zshrc
+  when: zshrc_exists.stat.exists
+  blockinfile:
+    dest: "{{ ansible_env.HOME }}/.zshrc"
+    block: |
+      [ -f ~/.cargo/env ] && source $HOME/.cargo/env
+    marker: '# {mark} ANSIBLE MANAGED BLOCK - Rust Cargo'
+    insertbefore: BOF
+    create: yes
+# END TODO: DRY this block
 
 # Used in some `many-rs` tests
 - name: Install "cbor-diag-cli" Rust package

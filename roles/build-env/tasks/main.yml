@@ -26,12 +26,36 @@
     owner: root
   become: yes
 
+# TODO: DRY this block
+- name: Check if {{ ansible_env.HOME }}/.bashrc exists
+  stat:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+  register: bashrc_exists
+
 - name: Setup SoftHSM2 environment in the .bashrc
-  blockinfile:
-    dest: "{{ ansible_env.HOME }}/.bashrc"
+  when: bashrc_exists.stat.exists
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
     block: |
       export PKCS11_SOFTHSM2_MODULE=/usr/lib/softhsm/libsofthsm2.so
       export SOFTHSM2_CONF=/tmp/softhsm2.conf
     marker: '# {mark} ANSIBLE MANAGED BLOCK - SoftHSM2'
     insertbefore: BOF
     create: yes
+
+- name: Check if {{ ansible_env.HOME }}/.zshrc exists
+  stat:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+  register: zshrc_exists
+
+- name: Setup SoftHSM2 environment in the .zshrc
+  when: zshrc_exists.stat.exists
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+    block: |
+      export PKCS11_SOFTHSM2_MODULE=/usr/lib/softhsm/libsofthsm2.so
+      export SOFTHSM2_CONF=/tmp/softhsm2.conf
+    marker: '# {mark} ANSIBLE MANAGED BLOCK - SoftHSM2'
+    insertbefore: BOF
+    create: yes
+# END TODO: DRY this block

@@ -1,0 +1,26 @@
+- name: Install `zsh`
+  ansible.builtin.package:
+    name: zsh
+    state: present
+
+- name: Fetch `oh-my-zsh` installer
+  get_url:
+    url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+    dest: /tmp/oh-my-zsh-install.sh
+    mode: '0755'
+    force: 'yes'
+
+- name: Check if {{ ansible_env.HOME }}/.oh-my-zsh exists
+  stat:
+    path: "{{ ansible_env.HOME }}/.oh-my-zsh"
+  register: ohmyzsh_exists
+
+- name: Install `oh-my-zsh`
+  when: not ohmyzsh_exists.stat.exists
+  shell: /tmp/oh-my-zsh-install.sh --unattended
+
+- name: Change default shell to `zsh`
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    shell: /bin/zsh
+  become: yes
