@@ -1,0 +1,6 @@
+---
+- hosts: dev_env
+  roles:
+    - build-env
+    - rust
+    - docker

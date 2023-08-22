@@ -1,0 +1,14 @@
+# Ubuntu Jammy 20.04LTS
+system_packages:
+  - build-essential
+  - clang-15
+  - libc++-15-dev
+  - libc++abi-15-dev
+  - libsofthsm2
+  - libssl-dev
+  - libudev-dev
+  - libusb-1.0-0-dev
+  - lld-15
+  - pkg-config
+  - zlib1g-dev
+bazelisk_version: v1.18.0

@@ -1,0 +1,29 @@
+- name: Create workspace in /data
+  ansible.builtin.file:
+    path: /data/buildbuddy
+    state: directory
+    mode: '0755'
+
+- name: Create temporary directory
+  ansible.builtin.file:
+    path: /data/buildbuddy/tmp
+    state: directory
+    mode: '0777'
+
+- name: Deploy executor
+  community.docker.docker_container:
+    name: bb-executor
+    image: gcr.io/flame-public/buildbuddy-executor-enterprise:latest
+    volumes:
+      - /data/buildbuddy/tmp:/buildbuddy
+    mounts:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+    command:
+      - --executor.docker_socket=/var/run/docker.sock
+      - --executor.host_root_directory=/data/buildbuddy/tmp
+      - --executor.app_target=grpcs://remote.buildbuddy.io
+      - --executor.api_key={{ buildbuddy_api_key }}
+    restart_policy: "always"
+    state: started

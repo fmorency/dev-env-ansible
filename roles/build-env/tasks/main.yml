@@ -1,0 +1,37 @@
+- name: Install system packages
+  ansible.builtin.package:
+    name: "{{ system_packages }}"
+    state: present
+  become: yes
+
+- name: Set default C compiler
+  community.general.alternatives:
+    name: clang
+    path: /usr/bin/clang-15
+    link: /usr/bin/clang
+  become: yes
+
+- name: Set default C++ compiler
+  community.general.alternatives:
+    name: clang++
+    path: /usr/bin/clang++-15
+    link: /usr/bin/clang++
+  become: yes
+
+- name: Download Bazelisk
+  ansible.builtin.get_url:
+    url: https://github.com/bazelbuild/bazelisk/releases/download/{{ bazelisk_version }}/bazelisk-linux-amd64
+    dest: /usr/bin/bazel
+    mode: '0755'
+    owner: root
+  become: yes
+
+- name: Setup SoftHSM2 environment in the .bashrc
+  blockinfile:
+    dest: "{{ ansible_env.HOME }}/.bashrc"
+    block: |
+      export PKCS11_SOFTHSM2_MODULE=/usr/lib/softhsm/libsofthsm2.so
+      export SOFTHSM2_CONF=/tmp/softhsm2.conf
+    marker: '# {mark} ANSIBLE MANAGED BLOCK - SoftHSM2'
+    insertbefore: BOF
+    create: yes
