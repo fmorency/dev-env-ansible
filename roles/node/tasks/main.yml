@@ -1,0 +1,58 @@
+- name: Download `nvm` installer
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/nvm-sh/nvm/{{ nvm_version }}/install.sh
+    dest: /tmp/nvm_install.sh
+    mode: '0755'
+  become: yes
+
+- name: Install `nvm`
+  ansible.builtin.shell: PROFILE=/dev/null /tmp/nvm_install.sh
+  args:
+    creates: "{{ ansible_env.HOME }}/.nvm/nvm.sh"
+
+# TODO: DRY this block
+- name: Check if {{ ansible_env.HOME }}/.bashrc exists
+  ansible.builtin.stat:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+  register: bashrc_exists
+
+- name: Setup `nvm` environment in the .bashrc
+  when: bashrc_exists.stat.exists
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    block: |
+      export NVM_DIR="$HOME/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+      [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+    marker: '# {mark} ANSIBLE MANAGED BLOCK - NVM'
+    insertbefore: BOF
+    create: yes
+
+- name: Check if {{ ansible_env.HOME }}/.zshrc exists
+  ansible.builtin.stat:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+  register: zshrc_exists
+
+- name: Setup `nvm` environment in the .zshrc
+  when: zshrc_exists.stat.exists
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+    block: |
+      export NVM_DIR="$HOME/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+      [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+    marker: '# {mark} ANSIBLE MANAGED BLOCK - NVM'
+    insertbefore: BOF
+    create: yes
+# END TODO: DRY this block
+
+- name: Install Node
+  ansible.builtin.shell:
+    cmd: nvm install "{{ item }}"
+    executable: /bin/bash
+  with_items: "{{ install_node_versions }}"
+
+- name: Set default node version to {{ default_node_version }}
+  ansible.builtin.shell:
+    cmd: nvm alias default "{{ default_node_version }}"
+    executable: /bin/bash

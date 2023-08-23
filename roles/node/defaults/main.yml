@@ -1,0 +1,5 @@
+nvm_version: v0.39.5
+default_node_version: v16.10.0
+install_node_versions:
+  - v16.10.0
+  - v18.16.1
