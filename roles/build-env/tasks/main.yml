@@ -28,7 +28,7 @@
 
 # TODO: DRY this block
 - name: Check if {{ ansible_env.HOME }}/.bashrc exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ ansible_env.HOME }}/.bashrc"
   register: bashrc_exists
 
@@ -44,7 +44,7 @@
     create: yes
 
 - name: Check if {{ ansible_env.HOME }}/.zshrc exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ ansible_env.HOME }}/.zshrc"
   register: zshrc_exists
 

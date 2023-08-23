@@ -1,11 +1,11 @@
 - name: Check if cargo is installed
-  shell: command -v cargo
+  ansible.builtin.shell: command -v cargo
   register: cargo_exists
   ignore_errors: yes
 
 - name: Download Rust Installer
   when: cargo_exists is failed
-  get_url:
+  ansible.builtin.get_url:
     url: https://sh.rustup.rs
     dest: /tmp/sh.rustup.rs
     mode: '0755'
@@ -13,17 +13,17 @@
 
 - name: Install Rust
   when: cargo_exists is failed
-  shell: /tmp/sh.rustup.rs -y
+  ansible.builtin.shell: /tmp/sh.rustup.rs -y
 
 # TODO: DRY this block
 - name: Check if {{ ansible_env.HOME }}/.bashrc exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ ansible_env.HOME }}/.bashrc"
   register: bashrc_exists
 
 - name: Ensure cargo environment is sourced from the .bashrc
   when: bashrc_exists.stat.exists
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: "{{ ansible_env.HOME }}/.bashrc"
     block: |
       [ -f ~/.cargo/env ] && source $HOME/.cargo/env
@@ -32,13 +32,13 @@
     create: yes
 
 - name: Check if {{ ansible_env.HOME }}/.zshrc exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ ansible_env.HOME }}/.zshrc"
   register: zshrc_exists
 
 - name: Ensure cargo environment is sourced from the .zshrc
   when: zshrc_exists.stat.exists
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: "{{ ansible_env.HOME }}/.zshrc"
     block: |
       [ -f ~/.cargo/env ] && source $HOME/.cargo/env
